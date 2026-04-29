@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blue Peak Risk — Future State Risk Management</title>
+<meta name="description" content="A tailored, specialised, comprehensive end-to-end risk assessment tool. Configure scoring, set thresholds, and download a custom Excel risk register aligned with your organisation.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0F2A47;
+    --mblue: #3B7BC4;
+    --lblue: #D6E4F0;
+    --lblue2: #EBF5FB;
+    --bg: #FAFBFC;
+    --card: #FFFFFF;
+    --border: #E5E7EB;
+    --text: #111827;
+    --text2: #6B7280;
+    --text3: #9CA3AF;
+    --green: #27AE60;
+    --amber: #E67E22;
+    --red: #C0392B;
+    --warn-bg: #FFF7E6;
+    --warn-text: #92400E;
+    --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 25px -5px rgba(15,42,71,0.08), 0 8px 10px -6px rgba(15,42,71,0.05);
+  }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+  /* ── HEADER ── */
+  header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    text-decoration: none;
+  }
+  .logo-mark {
+    flex-shrink: 0;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(15,42,71,0.1);
+  }
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .logo-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+  }
+  .logo-tag {
+    font-size: 10px;
+    color: var(--text2);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  @media (max-width: 540px) {
+    .logo-tag { display: none; }
+  }
+  .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+  .nav-links a {
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .nav-links a:hover { color: var(--navy); }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 4rem 0 3rem;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--lblue2);
+    color: var(--mblue);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero p.lead {
+    font-size: 17px;
+    color: var(--text2);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+  }
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--navy);
+    color: white;
+  }
+  .btn-primary:hover { background: #19305A; transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+  .btn-secondary {
+    background: white;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--bg); }
+
+  /* ── FEATURES ── */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin: 3rem 0;
+  }
+  @media (max-width: 768px) {
+    .features { grid-template-columns: 1fr; }
+  }
+  .feature {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .feature-icon {
+    width: 40px; height: 40px;
+    background: var(--lblue2);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--mblue);
+    margin-bottom: 1rem;
+    font-size: 20px;
+  }
+  .feature h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+  .feature p {
+    font-size: 14px;
+    color: var(--text2);
+  }
+
+  /* ── CONFIGURATOR ── */
+  .configurator {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0;
+    margin: 3rem 0;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+  .configurator-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--mblue) 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+  }
+  .configurator-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .configurator-header p {
+    font-size: 13px;
+    opacity: 0.85;
+  }
+  .stepper {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: #FAFBFC;
+  }
+  .step-btn {
+    flex: 1;
+    padding: 14px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    color: var(--text2);
+    transition: all 0.15s;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .step-btn:last-child { border-right: none; }
+  .step-btn.active {
+    background: white;
+    color: var(--mblue);
+    border-bottom: 2px solid var(--mblue);
+    margin-bottom: -1px;
+  }
+  .step-btn.done {
+    color: var(--green);
+  }
+  .step-btn:hover:not(.active) { background: var(--bg); }
+  .panel-wrap { padding: 2rem; }
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.25s; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .field-group { margin-bottom: 1.25rem; }
+  .field-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .field-label strong { color: var(--text); font-weight: 600; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 900px) {
+    .grid4 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .grid2, .grid3, .grid4 { grid-template-columns: 1fr; }
+  }
+  input[type=text], input[type=number], select, textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    background: white;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--mblue);
+    box-shadow: 0 0 0 3px rgba(46,95,163,0.1);
+  }
+  textarea { resize: vertical; min-height: 72px; }
+
+  .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    padding: 6px 13px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: white;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text2);
+    transition: all 0.15s;
+    user-select: none;
+    font-weight: 500;
+  }
+  .chip:hover { border-color: var(--mblue); }
+  .chip.on {
+    background: var(--lblue2);
+    color: var(--mblue);
+    border-color: var(--mblue);
+  }
+
+  .section-hdr {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+
+  /* NPAT input */
+  .npat-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--warn-bg);
+    border: 1px solid #FCD34D;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .npat-row label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--warn-text);
+    white-space: nowrap;
+  }
+  .npat-row input[type=text] { flex: 1; min-width: 150px; }
+  .npat-computed {
+    font-size: 13px;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+  .npat-computed strong { color: var(--text); }
+
+  /* Sliders */
+  .weight-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .weight-label {
+    font-size: 12px;
+    color: var(--text2);
+    width: 150px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .weight-val {
+    font-size: 12px;
+    font-weight: 600;
+    width: 40px;
+    text-align: right;
+    flex-shrink: 0;
+    color: var(--text);
+  }
+  input[type=range] { flex: 1; accent-color: var(--mblue); }
+
+  /* Impact category cards */
+  .impact-cat {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .cat-hdr {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #FAFBFC;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .cat-hdr:hover { background: var(--bg); }
+  .cat-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .cat-meta { flex: 1; }
+  .cat-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .cat-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .cat-arrow {
+    font-size: 12px;
+    color: var(--text3);
+    transition: transform 0.15s;
+  }
+  .cat-arrow.open { transform: rotate(90deg); }
+  .cat-body {
+    display: none;
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    background: white;
+  }
+  .cat-body.open { display: block; }
+  .tier-row {
+    display: grid;
+    grid-template-columns: 32px 100px 1fr 1fr;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+  @media (max-width: 640px) {
+    .tier-row { grid-template-columns: 32px 80px 1fr; }
+    .tier-row .tier-metric { grid-column: 3 / 4; }
+  }
+  .tier-badge {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+  }
+  .tier-label { font-weight: 600; color: var(--text); }
+  .tier-input {
+    padding: 6px 10px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    width: 100%;
+    background: white;
+  }
+
+  /* RAG cards */
+  .rag-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+  @media (max-width: 640px) { .rag-grid { grid-template-columns: 1fr; } }
+  .rag-card {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 1rem;
+    background: white;
+  }
+  .rag-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .rag-name {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .rag-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  /* Summary */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 640px) { .summary-grid { grid-template-columns: 1fr; } }
+  .summary-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .summary-card .s-label {
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .summary-card .s-val {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+  .download-state {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+  }
+  .download-state.show { display: block; }
+  .download-state .spinner {
+    border: 3px solid var(--border);
+    border-top-color: var(--mblue);
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    margin: 0 auto 1rem;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .download-state .check {
+    width: 56px; height: 56px;
+    background: var(--green);
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+  }
+  .download-state h3 { margin-bottom: 0.5rem; color: var(--text); }
+  .download-state p { color: var(--text2); font-size: 14px; }
+  .error-msg {
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    color: #991B1B;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-size: 13px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 0;
+    margin-top: 4rem;
+    text-align: center;
+    color: var(--text2);
+    font-size: 13px;
+    background: linear-gradient(180deg, transparent 0%, var(--lblue2) 100%);
+  }
+  .footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.75rem;
+  }
+  .footer-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+  }
+  .footer-tagline {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--navy);
+    margin-bottom: 0.5rem;
+    font-style: italic;
+  }
+  .footer-meta {
+    font-size: 12px;
+    color: var(--text3);
+  }
+  footer a { color: var(--mblue); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="nav">
+      <a href="#" class="logo" aria-label="Blue Peak Risk home">
+        <svg class="logo-mark" width="32" height="32" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="48" height="48" rx="8" fill="#0F2A47"/>
+          <path d="M 8 38 L 18 22 L 28 32 L 24 38 Z" fill="#3B7BC4"/>
+          <path d="M 14 38 L 26 16 L 38 38 Z" fill="#FFFFFF"/>
+        </svg>
+        <span class="logo-text">
+          <span class="logo-name">Blue Peak Risk</span>
+          <span class="logo-tag">Future state risk management</span>
+        </span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#configurator">Configure</a>
+        <a href="#about">About</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">TAILORED · SPECIALISED · COMPREHENSIVE · END-TO-END</div>
+    <h1>Future state risk management, configured to your business</h1>
+    <p class="lead">A tailored, specialised, and comprehensive end-to-end risk assessment tool. Configure your scoring framework, set financial thresholds linked to your Net Profit After Tax, and download a custom Excel risk register aligned with your organisation.</p>
+    <div class="cta-row">
+      <a href="#configurator" class="btn btn-primary">Get started →</a>
+      <a href="#features" class="btn btn-secondary">Learn more</a>
+    </div>
+  </div>
+</section>
+
+<section class="container" id="features">
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <h3>7 impact categories</h3>
+      <p>Score risks across Financial, Customer, Regulatory, Reputational, People, Social, and Environmental dimensions — all aligned with ISO 31000.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">💰</div>
+      <h3>Net Profit After Tax thresholds</h3>
+      <p>Financial impact tiers calculated from your Net Profit After Tax. The catastrophic threshold is anchored at 25% of Net Profit After Tax, with all other tiers scaled appropriately.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🎯</div>
+      <h3>Tailored to your context</h3>
+      <p>Pre-loaded with starter risks based on your industry, organisation size, and key focus areas. Add, remove, and customise with full Excel control.</p>
+    </div>
+  </div>
+</section>
+
+<section class="container" id="configurator">
+  <div class="configurator">
+    <div class="configurator-header">
+      <h2>Configure your risk register</h2>
+      <p>Six steps · About 3 minutes · Tailored to your organisation · Download as Excel</p>
+    </div>
+
+    <div class="stepper" id="stepper">
+      <button class="step-btn active" onclick="goTo(0)">1. Organisation</button>
+      <button class="step-btn" onclick="goTo(1)">2. Financial</button>
+      <button class="step-btn" onclick="goTo(2)">3. Impact scales</button>
+      <button class="step-btn" onclick="goTo(3)">4. Likelihood</button>
+      <button class="step-btn" onclick="goTo(4)">5. RAG thresholds</button>
+      <button class="step-btn" onclick="goTo(5)">6. Review & download</button>
+    </div>
+
+    <div class="panel-wrap">
+      <!-- ── PANEL 0 ── -->
+      <div class="panel active" id="panel-0">
+        <p class="section-hdr">Organisation profile</p>
+        <div class="grid2">
+          <div class="field-group">
+            <label class="field-label"><strong>Organisation name</strong> <span style="font-weight:400;color:var(--text3)">(optional — for branding the template)</span></label>
+            <input type="text" id="org-name" placeholder="e.g. BluePeak Inc">
+          </div>
+          <div class="field-group">
+            <label class="field-label"><strong>Industry sector</strong></label>
+            <select id="org-industry">
+              <option value="">— select —</option>
+              <optgroup label="Services">
+                <option>Professional Services (Legal, Consulting, Accounting)</option>
+                <option>Financial Services (Banking, Insurance, Investment)</option>
+                <option>Technology / SaaS / Software</option>
+                <option>Telecommunications</option>
+                <option>Media / Publishing / Advertising</option>
+                <option>Real Estate / Property Management</option>
+                <option>Hospitality / Tourism / Travel</option>
+                <option>Recruitment / HR Services</option>
+                <option>Marketing / Creative Agencies</option>
+                <option>Cybersecurity Services</option>
+              </optgroup>
+              <optgroup label="Goods & Production">
+                <option>Manufacturing (Light)</option>
+                <option>Manufacturing (Heavy / Industrial)</option>
+                <option>Pharmaceuticals / Biotechnology</option>
+                <option>Food & Beverage</option>
+                <option>Consumer Goods / FMCG</option>
+                <option>Automotive</option>
+                <option>Aerospace / Defence</option>
+                <option>Chemicals / Petrochemicals</option>
+              </optgroup>
+              <optgroup label="Trade & Distribution">
+                <option>Retail / E-commerce</option>
+                <option>Wholesale / Distribution</option>
+                <option>Logistics / Transport / Freight</option>
+                <option>Import / Export</option>
+              </optgroup>
+              <optgroup label="Resources & Infrastructure">
+                <option>Construction / Engineering</option>
+                <option>Mining / Resources</option>
+                <option>Oil & Gas</option>
+                <option>Energy / Utilities</option>
+                <option>Renewable Energy</option>
+                <option>Water / Wastewater</option>
+                <option>Agriculture / Aquaculture / Forestry</option>
+              </optgroup>
+              <optgroup label="Public & Social">
+                <option>Healthcare (Hospitals / Clinics)</option>
+                <option>Aged Care / Disability Services</option>
+                <option>Childcare / Early Learning</option>
+                <option>Education (K-12)</option>
+                <option>Higher Education / Universities</option>
+                <option>Government (Federal / State)</option>
+                <option>Government (Local Council)</option>
+                <option>Not-for-profit / Charity</option>
+                <option>Religious / Community Organisations</option>
+                <option>Sports / Recreation</option>
+                <option>Arts / Culture</option>
+              </optgroup>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid4">
+          <div class="field-group">
+            <label class="field-label"><strong>Organisation size</strong></label>
+            <select id="org-size">
+              <option value="">— select —</option>
+              <option>Micro (1-4 staff)</option>
+              <option>Small (5-19 staff)</option>
+              <option>Medium (20-199 staff)</option>
+              <option>Large (200-499 staff)</option>
+              <option>Enterprise (500-999 staff)</option>
+              <option>Major (1,000-2,499 staff)</option>
+              <option>Multinational (2,500-4,999 staff)</option>
+              <option>Global (5,000+ staff)</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label"><strong>Geographic presence</strong></label>
+            <select id="org-presence">
+              <option value="">— select —</option>
+              <option>Local (single city/region)</option>
+              <option>National (one country, multi-region)</option>
+              <option>Regional (2-5 countries)</option>
+              <option>International (6-15 countries)</option>
+              <option>Global (16+ countries)</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label"><strong>Primary country</strong></label>
+            <select id="org-country">
+              <option value="Australia" selected>Australia</option>
+              <option disabled>──────────</option>
+              <option>Afghanistan</option><option>Albania</option><option>Algeria</option>
+              <option>Andorra</option><option>Angola</option><option>Antigua and Barbuda</option>
+              <option>Argentina</option><option>Armenia</option><option>Austria</option>
+              <option>Azerbaijan</option><option>Bahamas</option><option>Bahrain</option>
+              <option>Bangladesh</option><option>Barbados</option><option>Belarus</option>
+              <option>Belgium</option><option>Belize</option><option>Benin</option>
+              <option>Bhutan</option><option>Bolivia</option><option>Bosnia and Herzegovina</option>
+              <option>Botswana</option><option>Brazil</option><option>Brunei</option>
+              <option>Bulgaria</option><option>Burkina Faso</option><option>Burundi</option>
+              <option>Cambodia</option><option>Cameroon</option><option>Canada</option>
+              <option>Cape Verde</option><option>Central African Republic</option><option>Chad</option>
+              <option>Chile</option><option>China</option><option>Colombia</option>
+              <option>Comoros</option><option>Congo</option><option>Costa Rica</option>
+              <option>Croatia</option><option>Cuba</option><option>Cyprus</option>
+              <option>Czech Republic</option><option>Denmark</option><option>Djibouti</option>
+              <option>Dominica</option><option>Dominican Republic</option><option>Ecuador</option>
+              <option>Egypt</option><option>El Salvador</option><option>Equatorial Guinea</option>
+              <option>Eritrea</option><option>Estonia</option><option>Eswatini</option>
+              <option>Ethiopia</option><option>Fiji</option><option>Finland</option>
+              <option>France</option><option>Gabon</option><option>Gambia</option>
+              <option>Georgia</option><option>Germany</option><option>Ghana</option>
+              <option>Greece</option><option>Grenada</option><option>Guatemala</option>
+              <option>Guinea</option><option>Guinea-Bissau</option><option>Guyana</option>
+              <option>Haiti</option><option>Honduras</option><option>Hong Kong</option>
+              <option>Hungary</option><option>Iceland</option><option>India</option>
+              <option>Indonesia</option><option>Iran</option><option>Iraq</option>
+              <option>Ireland</option><option>Israel</option><option>Italy</option>
+              <option>Ivory Coast</option><option>Jamaica</option><option>Japan</option>
+              <option>Jordan</option><option>Kazakhstan</option><option>Kenya</option>
+              <option>Kiribati</option><option>Kuwait</option><option>Kyrgyzstan</option>
+              <option>Laos</option><option>Latvia</option><option>Lebanon</option>
+              <option>Lesotho</option><option>Liberia</option><option>Libya</option>
+              <option>Liechtenstein</option><option>Lithuania</option><option>Luxembourg</option>
+              <option>Macau</option><option>Madagascar</option><option>Malawi</option>
+              <option>Malaysia</option><option>Maldives</option><option>Mali</option>
+              <option>Malta</option><option>Marshall Islands</option><option>Mauritania</option>
+              <option>Mauritius</option><option>Mexico</option><option>Micronesia</option>
+              <option>Moldova</option><option>Monaco</option><option>Mongolia</option>
+              <option>Montenegro</option><option>Morocco</option><option>Mozambique</option>
+              <option>Myanmar</option><option>Namibia</option><option>Nauru</option>
+              <option>Nepal</option><option>Netherlands</option><option>New Zealand</option>
+              <option>Nicaragua</option><option>Niger</option><option>Nigeria</option>
+              <option>North Korea</option><option>North Macedonia</option><option>Norway</option>
+              <option>Oman</option><option>Pakistan</option><option>Palau</option>
+              <option>Palestine</option><option>Panama</option><option>Papua New Guinea</option>
+              <option>Paraguay</option><option>Peru</option><option>Philippines</option>
+              <option>Poland</option><option>Portugal</option><option>Qatar</option>
+              <option>Romania</option><option>Russia</option><option>Rwanda</option>
+              <option>Saint Kitts and Nevis</option><option>Saint Lucia</option><option>Saint Vincent and the Grenadines</option>
+              <option>Samoa</option><option>San Marino</option><option>Sao Tome and Principe</option>
+              <option>Saudi Arabia</option><option>Senegal</option><option>Serbia</option>
+              <option>Seychelles</option><option>Sierra Leone</option><option>Singapore</option>
+              <option>Slovakia</option><option>Slovenia</option><option>Solomon Islands</option>
+              <option>Somalia</option><option>South Africa</option><option>South Korea</option>
+              <option>South Sudan</option><option>Spain</option><option>Sri Lanka</option>
+              <option>Sudan</option><option>Suriname</option><option>Sweden</option>
+              <option>Switzerland</option><option>Syria</option><option>Taiwan</option>
+              <option>Tajikistan</option><option>Tanzania</option><option>Thailand</option>
+              <option>Timor-Leste</option><option>Togo</option><option>Tonga</option>
+              <option>Trinidad and Tobago</option><option>Tunisia</option><option>Turkey</option>
+              <option>Turkmenistan</option><option>Tuvalu</option><option>Uganda</option>
+              <option>Ukraine</option><option>United Arab Emirates</option><option>United Kingdom</option>
+              <option>United States</option><option>Uruguay</option><option>Uzbekistan</option>
+              <option>Vanuatu</option><option>Vatican City</option><option>Venezuela</option>
+              <option>Vietnam</option><option>Yemen</option><option>Zambia</option>
+              <option>Zimbabwe</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label"><strong>Review cycle</strong></label>
+            <select id="org-cycle">
+              <option>Quarterly</option>
+              <option>Bi-annually</option>
+              <option>Annually</option>
+              <option>Monthly</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label"><strong>Key risk focus areas</strong> (select all that apply)</label>
+          <div class="chip-group" id="focus-chips">
+            <div class="chip on" data-val="Cyber & Data">Cyber & Data</div>
+            <div class="chip on" data-val="Financial">Financial</div>
+            <div class="chip" data-val="Regulatory">Regulatory</div>
+            <div class="chip" data-val="Operational">Operational</div>
+            <div class="chip" data-val="People & Safety">People & Safety</div>
+            <div class="chip" data-val="Reputational">Reputational</div>
+            <div class="chip" data-val="Environmental">Environmental</div>
+            <div class="chip" data-val="Supply Chain">Supply Chain</div>
+            <div class="chip" data-val="Strategic">Strategic</div>
+            <div class="chip" data-val="Customer">Customer</div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label"><strong>Notes</strong> (optional context)</label>
+          <textarea id="org-notes" placeholder="e.g. Recently expanded into new markets, under regulatory review..."></textarea>
+        </div>
+        <div class="nav-row">
+          <span></span>
+          <button class="btn btn-primary" onclick="goTo(1)">Next: Financial setup →</button>
+        </div>
+      </div>
+
+      <!-- ── PANEL 1 ── -->
+      <div class="panel" id="panel-1">
+        <p class="section-hdr">Financial parameters</p>
+        <div class="npat-row">
+          <label for="npat-input">Annual Net Profit After Tax</label>
+          <input type="text" id="npat-input" placeholder="e.g. 2,000,000" value="2,000,000">
+          <div class="npat-computed">Catastrophic threshold: <strong id="cat-amt">$500,000</strong> (25% of Net Profit After Tax)</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label"><strong>Currency</strong></label>
+          <select id="currency" style="max-width:200px">
+            <option value="AUD">AUD ($)</option>
+            <option value="USD">USD ($)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="NZD">NZD ($)</option>
+            <option value="SGD">SGD ($)</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label"><strong>Financial tier distribution</strong> — % of Net Profit After Tax for each impact level</label>
+          <div id="fin-sliders"></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn btn-secondary" onclick="goTo(0)">← Back</button>
+          <button class="btn btn-primary" onclick="goTo(2)">Next: Impact scales →</button>
+        </div>
+      </div>
+
+      <!-- ── PANEL 2 ── -->
+      <div class="panel" id="panel-2">
+        <p class="section-hdr">Impact category scales — 7 categories, 5 tiers each</p>
+        <div id="impact-cats"></div>
+        <div class="nav-row">
+          <button class="btn btn-secondary" onclick="goTo(1)">← Back</button>
+          <button class="btn btn-primary" onclick="goTo(3)">Next: Likelihood →</button>
+        </div>
+      </div>
+
+      <!-- ── PANEL 3 ── -->
+      <div class="panel" id="panel-3">
+        <p class="section-hdr">Likelihood scale</p>
+        <div id="lh-rows"></div>
+        <div class="nav-row">
+          <button class="btn btn-secondary" onclick="goTo(2)">← Back</button>
+          <button class="btn btn-primary" onclick="goTo(4)">Next: RAG thresholds →</button>
+        </div>
+      </div>
+
+      <!-- ── PANEL 4 ── -->
+      <div class="panel" id="panel-4">
+        <p class="section-hdr">RAG thresholds — risk score = likelihood × impact (1-25)</p>
+        <div class="rag-grid" id="rag-cards"></div>
+        <div class="nav-row">
+          <button class="btn btn-secondary" onclick="goTo(3)">← Back</button>
+          <button class="btn btn-primary" onclick="goTo(5)">Next: Review →</button>
+        </div>
+      </div>
+
+      <!-- ── PANEL 5 ── -->
+      <div class="panel" id="panel-5">
+        <div id="review-content">
+          <p class="section-hdr">Review your configuration</p>
+          <div class="summary-grid" id="summary-cards"></div>
+          <div class="error-msg" id="error-msg"></div>
+          <div class="nav-row">
+            <button class="btn btn-secondary" onclick="goTo(4)">← Back</button>
+            <button class="btn btn-primary" onclick="downloadRegister()">Download Excel register ↓</button>
+          </div>
+        </div>
+        <div class="download-state" id="loading-state">
+          <div class="spinner"></div>
+          <h3>Generating your register...</h3>
+          <p>Building your tailored Excel file. This usually takes a few seconds.</p>
+        </div>
+        <div class="download-state" id="success-state">
+          <div class="check">✓</div>
+          <h3>Your register is ready!</h3>
+          <p>The download should start automatically. Check your downloads folder.</p>
+          <div style="margin-top:1.5rem">
+            <button class="btn btn-secondary" onclick="resetUI()">Generate another</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container" id="about">
+  <div class="features" style="margin-bottom:3rem">
+    <div class="feature">
+      <div class="feature-icon">🔒</div>
+      <h3>Your data stays yours</h3>
+      <p>Configuration data is only used to generate your file. Nothing is stored, logged, or shared.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📐</div>
+      <h3>Standards-aligned</h3>
+      <p>Built on ISO 31000 risk management principles, with a 5×5 likelihood-impact matrix that's familiar to auditors and boards.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">⚡</div>
+      <h3>Edit anywhere</h3>
+      <p>The output is a standard Excel workbook with live formulas. Open in Microsoft Excel, Google Sheets, or LibreOffice.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-brand">
+      <svg width="24" height="24" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="48" height="48" rx="8" fill="#0F2A47"/>
+        <path d="M 8 38 L 18 22 L 28 32 L 24 38 Z" fill="#3B7BC4"/>
+        <path d="M 14 38 L 26 16 L 38 38 Z" fill="#FFFFFF"/>
+      </svg>
+      <span class="footer-name">Blue Peak Risk</span>
+    </div>
+    <p class="footer-tagline">Your partner for future state integrated risk management</p>
+    <p class="footer-meta">© <span id="footer-year"></span> Blue Peak Risk · All rights reserved</p>
+  </div>
+</footer>
+<script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
+
+<script>
+// ── CONFIG ──
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:8000'
+  : 'https://risk-templates-production.up.railway.app';
+
+const SCORE_COLORS = ['#27AE60','#82C45E','#E8B84B','#E67E22','#C0392B'];
+const TIER_NAMES = ['Negligible','Minor','Moderate','Major','Catastrophic'];
+
+const IMPACT_CATS = [
+  { id:'financial', label:'Financial', icon:'💰', color:'#EBF5FB' },
+  { id:'customers', label:'Customers', icon:'👥', color:'#EAF5FB' },
+  { id:'regulatory', label:'Regulatory', icon:'⚖️', color:'#F4ECF7' },
+  { id:'reputational', label:'Reputational', icon:'📣', color:'#FEF9E7' },
+  { id:'people', label:'People', icon:'🦺', color:'#FDFEFE' },
+  { id:'social', label:'Social', icon:'🌐', color:'#E9F7EF' },
+  { id:'environmental', label:'Environmental', icon:'🌿', color:'#EAFAF1' },
+];
+
+const DEFAULT_TIER_DESCS = {
+  financial: ['Immaterial loss; absorbed in normal operations.','Small loss; manageable within budget.','Significant loss; management action required.','Serious loss; board attention required.','Threatens solvency or business continuity.'],
+  customers: ['Single complaint; resolved immediately.','Small number dissatisfied; minimal churn.','Noticeable dissatisfaction; measurable churn.','Significant customer loss; key accounts threatened.','Mass exodus; brand irreparably damaged.'],
+  regulatory: ['Minor procedural breach; self-corrected.','Low-level non-compliance; remediation required.','Formal sanction; public disclosure likely.','Serious breach; large fine; licence suspension.','Licence revocation; criminal prosecution.'],
+  reputational: ['Isolated negative comment; no media.','Limited negative coverage; quickly rebutted.','Sustained media; stakeholder concern.','National coverage; significant backlash.','Severe brand destruction; loss of public trust.'],
+  people: ['Minor inconvenience; no injuries.','Minor injury; first aid; brief absence.','Moderate injury; medical treatment; reportable.','Serious injury; hospitalisation; notifiable.','Fatality or permanent disability.'],
+  social: ['No community concern raised.','Limited concern; informal contact.','Organised concern; public meetings.','Significant harm; public opposition.','Severe lasting harm; loss of social licence.'],
+  environmental: ['Trivial, contained effect.','Minor, localised; quickly remediated.','Measurable harm; regulator notified.','Significant damage; extended remediation.','Irreversible destruction; prosecution.'],
+};
+
+const LH_DATA = [
+  {rating:'Rare', desc:'May only occur in exceptional circumstances.', freq:'Less than once in 10 years'},
+  {rating:'Unlikely', desc:'Could occur but not expected.', freq:'Once in 5-10 years'},
+  {rating:'Possible', desc:'Might occur at some point.', freq:'Once in 2-5 years'},
+  {rating:'Likely', desc:'Will probably occur.', freq:'Once a year'},
+  {rating:'Almost Certain', desc:'Expected to occur frequently.', freq:'Multiple times per year'},
+];
+
+let state = {
+  org: { name:'', industry:'', size:'', country:'Australia', presence:'', cycle:'Quarterly', notes:'' },
+  focus: ['Cyber & Data','Financial'],
+  npat: 2000000,
+  currency: 'AUD',
+  finPcts: [0.01, 0.03, 0.08, 0.15, 0.25],
+  rag: [{label:'Green',min:1,max:5},{label:'Amber',min:6,max:14},{label:'Red',min:15,max:25}],
+};
+
+const CURRENCY_SYMBOLS = { AUD:'$', USD:'$', GBP:'£', EUR:'€', NZD:'$', SGD:'$' };
+
+function parseMoney(s){ return parseFloat(String(s).replace(/[^0-9.]/g,'')) || 0; }
+function fmtMoney(n){
+  const sym = CURRENCY_SYMBOLS[state.currency] || '$';
+  if(n>=1e6) return sym + (n/1e6).toFixed(2).replace(/\.?0+$/,'') + 'M';
+  if(n>=1e3) return sym + Math.round(n/1000) + 'K';
+  return sym + Math.round(n).toLocaleString();
+}
+
+// ── NAV ──
+function goTo(step){
+  document.querySelectorAll('.panel').forEach((p,i)=>{ p.classList.toggle('active', i===step); });
+  document.querySelectorAll('.step-btn').forEach((b,i)=>{
+    b.classList.remove('active','done');
+    if(i===step) b.classList.add('active');
+    else if(i<step) b.classList.add('done');
+  });
+  if(step===5) renderSummary();
+  // Scroll to configurator on mobile
+  document.getElementById('configurator').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── ORG ──
+['org-name','org-industry','org-size','org-country','org-presence','org-cycle','org-notes'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', e=>{
+    const key = id.replace('org-','');
+    state.org[key] = e.target.value;
+  });
+});
+
+document.querySelectorAll('#focus-chips .chip').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    chip.classList.toggle('on');
+    const v = chip.dataset.val;
+    if(chip.classList.contains('on') && !state.focus.includes(v)) state.focus.push(v);
+    else state.focus = state.focus.filter(x=>x!==v);
+  });
+});
+
+// ── FINANCIAL ──
+document.getElementById('npat-input').addEventListener('input', updateFinancial);
+document.getElementById('currency').addEventListener('change', updateFinancial);
+
+function updateFinancial(){
+  state.npat = parseMoney(document.getElementById('npat-input').value);
+  state.currency = document.getElementById('currency').value;
+  document.getElementById('cat-amt').textContent = fmtMoney(state.npat * 0.25);
+  renderFinSliders();
+}
+
+function renderFinSliders(){
+  const html = state.finPcts.map((p,i)=>`
+    <div class="weight-row">
+      <div class="weight-label">
+        <span style="width:22px;height:22px;border-radius:50%;background:${SCORE_COLORS[i]};display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:600">${i+1}</span>
+        <span>${TIER_NAMES[i]}</span>
+      </div>
+      <input type="range" min="0.5" max="50" step="0.5" value="${(p*100).toFixed(1)}" oninput="updateFinPct(${i},this.value)">
+      <div class="weight-val">${(p*100).toFixed(1)}%</div>
+      <div style="font-size:11px;color:var(--text2);width:100px;text-align:right">${fmtMoney(state.npat*p)}</div>
+    </div>
+  `).join('');
+  document.getElementById('fin-sliders').innerHTML = html;
+}
+
+function updateFinPct(idx, val){
+  state.finPcts[idx] = parseFloat(val)/100;
+  renderFinSliders();
+}
+
+// ── IMPACT ──
+function renderImpactCats(){
+  document.getElementById('impact-cats').innerHTML = IMPACT_CATS.map((cat,ci)=>`
+    <div class="impact-cat">
+      <div class="cat-hdr" onclick="toggleCat(${ci})">
+        <div class="cat-icon" style="background:${cat.color}">${cat.icon}</div>
+        <div class="cat-meta">
+          <div class="cat-title">${cat.label}</div>
+          <div class="cat-sub">5-tier scale · click to view</div>
+        </div>
+        <span class="cat-arrow" id="arrow-${ci}">▶</span>
+      </div>
+      <div class="cat-body" id="body-${ci}">
+        ${DEFAULT_TIER_DESCS[cat.id].map((desc,ti)=>`
+          <div class="tier-row">
+            <div class="tier-badge" style="background:${SCORE_COLORS[ti]}">${ti+1}</div>
+            <span class="tier-label">${TIER_NAMES[ti]}</span>
+            <span style="color:var(--text2);font-size:12px">${desc}</span>
+            ${ci===0 ? `<span style="color:var(--text);font-size:12px;font-weight:500" class="tier-metric">Up to ${fmtMoney(state.npat*state.finPcts[ti])}</span>` : '<span class="tier-metric"></span>'}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleCat(ci){
+  document.getElementById('body-'+ci).classList.toggle('open');
+  document.getElementById('arrow-'+ci).classList.toggle('open');
+}
+
+// ── LIKELIHOOD ──
+function renderLH(){
+  document.getElementById('lh-rows').innerHTML = LH_DATA.map((t,i)=>`
+    <div class="tier-row">
+      <div class="tier-badge" style="background:${SCORE_COLORS[i]}">${i+1}</div>
+      <span class="tier-label">${t.rating}</span>
+      <span style="color:var(--text2);font-size:12px">${t.desc}</span>
+      <span style="color:var(--text2);font-size:12px">${t.freq}</span>
+    </div>
+  `).join('');
+}
+
+// ── RAG ──
+function renderRAG(){
+  const colors = ['#27AE60','#E67E22','#C0392B'];
+  document.getElementById('rag-cards').innerHTML = state.rag.map((r,i)=>`
+    <div class="rag-card">
+      <div class="rag-name"><span class="rag-dot" style="background:${colors[i]}"></span>${r.label}</div>
+      <div class="rag-inputs">
+        <div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:3px">Min</div>
+          <input type="number" value="${r.min}" min="1" max="25" oninput="state.rag[${i}].min=parseInt(this.value)||1">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:3px">Max</div>
+          <input type="number" value="${r.max}" min="1" max="25" oninput="state.rag[${i}].max=parseInt(this.value)||25">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── REVIEW ──
+function renderSummary(){
+  const cards = [
+    { label:'Organisation', val: state.org.name || '(unbranded — generic template)' },
+    { label:'Industry', val: state.org.industry || '(not set)' },
+    { label:'Size', val: state.org.size || '(not set)' },
+    { label:'Geographic presence', val: state.org.presence || '(not set)' },
+    { label:'Primary country', val: state.org.country || 'Australia' },
+    { label:'Review cycle', val: state.org.cycle },
+    { label:'Net Profit After Tax', val: fmtMoney(state.npat) },
+    { label:'Catastrophic threshold', val: fmtMoney(state.npat*0.25) + ' (25% of NPAT)' },
+    { label:'Currency', val: state.currency },
+    { label:'Focus areas', val: state.focus.join(', ') || '(none)' },
+  ];
+  document.getElementById('summary-cards').innerHTML = cards.map(c=>`
+    <div class="summary-card">
+      <div class="s-label">${c.label}</div>
+      <div class="s-val">${c.val}</div>
+    </div>
+  `).join('');
+}
+
+// ── DOWNLOAD ──
+async function downloadRegister(){
+  document.getElementById('review-content').style.display = 'none';
+  document.getElementById('loading-state').classList.add('show');
+  document.getElementById('error-msg').classList.remove('show');
+
+  const payload = {
+    organisation: {
+      name: state.org.name || 'Organisation',
+      industry: state.org.industry || 'General',
+      size: state.org.size || 'SME',
+      country: state.org.country || 'Australia',
+      presence: state.org.presence || '',
+      cycle: state.org.cycle,
+      notes: state.org.notes || ''
+    },
+    financial: {
+      npat: state.npat,
+      currency: state.currency,
+      fin_pcts: state.finPcts
+    },
+    focus_areas: state.focus,
+    rag_thresholds: state.rag,
+    scoring_method: 'max'
+  };
+
+  try {
+    const response = await fetch(API_BASE + '/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('Server returned ' + response.status);
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const orgSlug = (state.org.name || 'Blue_Peak_Risk').replace(/\s+/g, '_');
+    const filename = `Risk_Register_${orgSlug}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    document.getElementById('loading-state').classList.remove('show');
+    document.getElementById('success-state').classList.add('show');
+
+  } catch (err) {
+    document.getElementById('loading-state').classList.remove('show');
+    document.getElementById('review-content').style.display = 'block';
+    const msg = document.getElementById('error-msg');
+    msg.textContent = 'Sorry, something went wrong while generating your register. ' +
+      'If you are running this locally, make sure the backend is running on ' + API_BASE + '. Error: ' + err.message;
+    msg.classList.add('show');
+  }
+}
+
+function resetUI(){
+  document.getElementById('success-state').classList.remove('show');
+  document.getElementById('review-content').style.display = 'block';
+  goTo(0);
+}
+
+// ── INIT ──
+renderFinSliders();
+renderImpactCats();
+renderLH();
+renderRAG();
+</script>
+
+</body>
+</html>
