@@ -24,27 +24,82 @@ BUILDER_PATH = BACKEND_DIR / "build_summary_v3.py"
 
 # ── Industry name → 4-letter code mapping ─────────────────────────────
 # Maps the strings sent by the frontend dropdown to the codes the builder uses.
-# If the frontend sends a label not in this map, /generate returns 400.
+# The frontend sends the full label including bracketed descriptions.
+# Fallback: if no exact match, try prefix matching on the first word.
 INDUSTRY_MAP = {
-    "Professional Services":          "PROF",
-    "Financial Services":             "FINS",
-    "Technology and SaaS":            "TECH",
-    "Technology & SaaS":              "TECH",
-    "Technology":                     "TECH",
-    "Healthcare":                     "HCAR",
-    "Healthcare and Life Sciences":   "HCAR",
-    "Healthcare & Life Sciences":     "HCAR",
-    "Retail":                         "RETL",
-    "Retail and Consumer":            "RETL",
-    "Retail & Consumer":              "RETL",
-    "Manufacturing":                  "INDU",
-    "Manufacturing and Industrial":   "INDU",
-    "Industrial":                     "INDU",
-    "Public Sector":                  "PUBL",
-    "Public Sector and Not-for-Profit": "PUBL",
-    "Public Sector & Not-for-Profit": "PUBL",
-    "Not-for-Profit":                 "PUBL",
-    "Government":                     "PUBL",
+    # Professional Services
+    "Professional Services (Legal, Consulting, Accounting)": "PROF",
+    "Professional Services":                                  "PROF",
+    "Recruitment / HR Services":                              "PROF",
+    "Marketing / Creative Agencies":                          "PROF",
+    "Cybersecurity Services":                                 "PROF",
+    "Media / Publishing / Advertising":                       "PROF",
+    "Real Estate / Property Management":                      "PROF",
+    "Hospitality / Tourism / Travel":                         "PROF",
+
+    # Financial Services
+    "Financial Services (Banking, Insurance, Investment)":    "FINS",
+    "Financial Services":                                     "FINS",
+
+    # Technology
+    "Technology / SaaS / Software":                           "TECH",
+    "Technology and SaaS":                                    "TECH",
+    "Technology & SaaS":                                      "TECH",
+    "Technology":                                             "TECH",
+    "Telecommunications":                                     "TECH",
+
+    # Healthcare
+    "Healthcare (Hospitals / Clinics)":                       "HCAR",
+    "Healthcare and Life Sciences":                           "HCAR",
+    "Healthcare & Life Sciences":                             "HCAR",
+    "Healthcare":                                             "HCAR",
+    "Aged Care / Disability Services":                        "HCAR",
+    "Childcare / Early Learning":                             "HCAR",
+    "Pharmaceuticals / Biotechnology":                        "HCAR",
+
+    # Retail
+    "Retail / E-commerce":                                    "RETL",
+    "Retail and Consumer":                                    "RETL",
+    "Retail & Consumer":                                      "RETL",
+    "Retail":                                                 "RETL",
+    "Wholesale / Distribution":                               "RETL",
+    "Logistics / Transport / Freight":                        "RETL",
+    "Import / Export":                                        "RETL",
+    "Consumer Goods / FMCG":                                  "RETL",
+    "Food & Beverage":                                        "RETL",
+
+    # Industrial / Manufacturing
+    "Manufacturing (Light)":                                  "INDU",
+    "Manufacturing (Heavy / Industrial)":                     "INDU",
+    "Manufacturing and Industrial":                           "INDU",
+    "Manufacturing":                                          "INDU",
+    "Industrial":                                             "INDU",
+    "Construction / Engineering":                             "INDU",
+    "Mining / Resources":                                     "INDU",
+    "Oil & Gas":                                              "INDU",
+    "Energy / Utilities":                                     "INDU",
+    "Renewable Energy":                                       "INDU",
+    "Water / Wastewater":                                     "INDU",
+    "Agriculture / Aquaculture / Forestry":                   "INDU",
+    "Chemicals / Petrochemicals":                             "INDU",
+    "Automotive":                                             "INDU",
+    "Aerospace / Defence":                                    "INDU",
+
+    # Public Sector / Not-for-profit
+    "Government (Federal / State)":                           "PUBL",
+    "Government (Local Council)":                             "PUBL",
+    "Not-for-profit / Charity":                               "PUBL",
+    "Religious / Community Organisations":                    "PUBL",
+    "Public Sector and Not-for-Profit":                       "PUBL",
+    "Public Sector & Not-for-Profit":                         "PUBL",
+    "Public Sector":                                          "PUBL",
+    "Not-for-Profit":                                         "PUBL",
+    "Government":                                             "PUBL",
+    "Education (K-12)":                                       "PUBL",
+    "Higher Education / Universities":                        "PUBL",
+    "Sports / Recreation":                                    "PUBL",
+    "Arts / Culture":                                         "PUBL",
+    "Other":                                                  "PROF",  # default fallback
 }
 
 # ── FastAPI app ───────────────────────────────────────────────────────
@@ -120,14 +175,20 @@ def health():
 @app.post("/generate")
 def generate_register(config: RegisterConfig):
     """Generate a customised Excel risk register and return as a download."""
-    # Map industry label to code
+    # Map industry label to code — exact match first, then partial
     industry_label = config.organisation.industry
     industry_code = INDUSTRY_MAP.get(industry_label)
+    if industry_code is None:
+        # Partial match: check if any key starts with the sent label or vice versa
+        for key, code in INDUSTRY_MAP.items():
+            if industry_label.lower().startswith(key.lower().split("(")[0].strip().lower()):
+                industry_code = code
+                break
     if industry_code is None:
         raise HTTPException(
             status_code=400,
             detail=(f"Unknown industry '{industry_label}'. "
-                    f"Supported: {sorted(set(INDUSTRY_MAP.keys()))}"),
+                    f"Please select from the dropdown options."),
         )
 
     # Build output path (will hold the generated workbook)
