@@ -22,6 +22,26 @@ from pydantic import BaseModel, Field
 BACKEND_DIR  = Path(__file__).parent
 BUILDER_PATH = BACKEND_DIR / "build_summary_v3.py"
 
+# ── Warm up: pre-run builder once at startup to import all library modules ──
+# This eliminates cold-start delays on the first real user request.
+# Runs in background so it doesn't block startup.
+import threading
+def _warmup():
+    try:
+        import tempfile as _t
+        _fd, _out = _t.mkstemp(suffix=".xlsx", prefix="bpr_warmup_")
+        os.close(_fd)
+        subprocess.run(
+            ["python", str(BUILDER_PATH), "--industry", "PROF", "--npat", "1000000", "--out", _out],
+            capture_output=True, text=True, cwd=str(BACKEND_DIR), timeout=120,
+        )
+        try: os.remove(_out)
+        except: pass
+    except Exception:
+        pass  # warmup failure is non-fatal
+
+threading.Thread(target=_warmup, daemon=True).start()
+
 # ── Industry name → 4-letter code mapping ─────────────────────────────
 # Maps the strings sent by the frontend dropdown to the codes the builder uses.
 # The frontend sends the full label including bracketed descriptions.
@@ -223,10 +243,10 @@ def generate_register(config: RegisterConfig):
             capture_output=True,
             text=True,
             cwd=str(BACKEND_DIR),
-            timeout=60,
+            timeout=120,  # 2 minutes — allows for Railway cold starts
         )
     except subprocess.TimeoutExpired:
-        raise HTTPException(status_code=504, detail="Workbook generation timed out (>60s).")
+        raise HTTPException(status_code=504, detail="Workbook generation timed out (>120s).")
     finally:
         # Clean up the config file regardless
         try:
