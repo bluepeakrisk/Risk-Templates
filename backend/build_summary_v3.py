@@ -11,6 +11,9 @@ CLI usage:
 import sys, argparse, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'risk-library'))
 
+# Dynamic path to risk-library — works on any machine / deployment
+_RISK_LIB = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'risk-library')
+
 # ── Tailoring parameters ─────────────────────────────────────────
 _parser = argparse.ArgumentParser()
 _parser.add_argument("--industry", default=None,
@@ -19,7 +22,7 @@ _parser.add_argument("--industry", default=None,
 _parser.add_argument("--npat", type=float, default=None,
                      help="Net profit after tax in dollars. If provided, "
                           "Rating Methodology impact scale is calibrated as % of NPAT.")
-_parser.add_argument("--out", default="/home/claude/Library_Review_Summary.xlsx",
+_parser.add_argument("--out", default=os.path.join(os.getcwd(), "Library_Review_Summary.xlsx"),
                      help="Output path for the workbook.")
 _parser.add_argument("--config", default=None,
                      help="Path to JSON config file. When provided, all other flags are "
@@ -100,20 +103,20 @@ def _load(name, path):
     m = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m
-_b5a = _load("b5a", "/home/claude/risk-library/_b5a.py")
-_b5b = _load("b5b", "/home/claude/risk-library/_b5b.py")
-_g3  = _load("g3",  "/home/claude/risk-library/_g3.py")
-_g4  = _load("g4",  "/home/claude/risk-library/_g4.py")
-_b6  = _load("b6",  "/home/claude/risk-library/_b6.py")
-_b7  = _load("b7",  "/home/claude/risk-library/_b7.py")
-_b8a = _load("b8a", "/home/claude/risk-library/_b8a.py")
-_b8b = _load("b8b", "/home/claude/risk-library/_b8b.py")
-_b9  = _load("b9",  "/home/claude/risk-library/_b9.py")
-_b10 = _load("b10", "/home/claude/risk-library/_b10_ai.py")
-_fw  = _load("fw",  "/home/claude/risk-library/_frameworks.py")
-_th  = _load("th",  "/home/claude/risk-library/_themes.py")
-_rn  = _load("rn",  "/home/claude/risk-library/_renames.py")
-_dsc = _load("dsc", "/home/claude/risk-library/_descriptions.py")
+_b5a = _load("b5a", os.path.join(_RISK_LIB, "_b5a.py")
+_b5b = _load("b5b", os.path.join(_RISK_LIB, "_b5b.py")
+_g3  = _load("g3",  os.path.join(_RISK_LIB, "_g3.py")
+_g4  = _load("g4",  os.path.join(_RISK_LIB, "_g4.py")
+_b6  = _load("b6",  os.path.join(_RISK_LIB, "_b6.py")
+_b7  = _load("b7",  os.path.join(_RISK_LIB, "_b7.py")
+_b8a = _load("b8a", os.path.join(_RISK_LIB, "_b8a.py")
+_b8b = _load("b8b", os.path.join(_RISK_LIB, "_b8b.py")
+_b9  = _load("b9",  os.path.join(_RISK_LIB, "_b9.py")
+_b10 = _load("b10", os.path.join(_RISK_LIB, "_b10_ai.py")
+_fw  = _load("fw",  os.path.join(_RISK_LIB, "_frameworks.py")
+_th  = _load("th",  os.path.join(_RISK_LIB, "_themes.py")
+_rn  = _load("rn",  os.path.join(_RISK_LIB, "_renames.py")
+_dsc = _load("dsc", os.path.join(_RISK_LIB, "_descriptions.py")
 CONTROLS = {**CONTROLS, **_b5a.CONTROLS_5A, **_b5b.CONTROLS_5B}
 GUIDANCE = {**GUIDANCE, **_g3.GUIDANCE_3, **_g4.GUIDANCE_4}
 
