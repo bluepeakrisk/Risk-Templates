@@ -231,9 +231,13 @@ def generate_register(config: RegisterConfig):
             pass
 
     if result.returncode != 0:
+        # Print full stderr to Railway logs (visible in deploy log stream)
+        print(f"[ERROR] Builder failed for industry={industry_code}")
+        print(f"[ERROR] STDOUT: {result.stdout[-1000:]}")
+        print(f"[ERROR] STDERR: {result.stderr[-2000:]}")
         raise HTTPException(
             status_code=500,
-            detail=f"Builder failed: {result.stderr[-500:] if result.stderr else 'no stderr'}",
+            detail=f"Builder failed: {result.stderr[-1000:] if result.stderr else result.stdout[-1000:] or 'no output'}",
         )
 
     if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
@@ -252,6 +256,47 @@ def generate_register(config: RegisterConfig):
         # via its background cleanup if we use BackgroundTask; for simplicity
         # we rely on the OS to clean /tmp eventually.
     )
+
+
+@app.get("/debug")
+def debug_builder():
+    """Run builder with minimal test config and return full stdout/stderr.
+    Remove this endpoint once the deployment is stable."""
+    import tempfile, json, subprocess
+    out_fd, out_path = tempfile.mkstemp(suffix=".xlsx", prefix="bpr_debug_")
+    os.close(out_fd)
+    test_cfg = {
+        "industry_code": "FINS",
+        "output_path": out_path,
+        "organisation": {"name": "Debug", "industry": "Financial Services", "size": "", "country": "", "cycle": "", "notes": ""},
+        "financial": {"npat": 1000000, "currency": "AUD", "fin_pcts": [0.01, 0.05, 0.15, 0.30, 1.00]},
+        "focus_areas": [],
+        "rag_thresholds": [{"label":"Low","min":1,"max":3},{"label":"Moderate","min":4,"max":9},{"label":"High","min":10,"max":15},{"label":"Very High","min":16,"max":25}],
+        "scoring_method": "max",
+    }
+    cfg_fd, cfg_path = tempfile.mkstemp(suffix=".json", prefix="bpr_dbg_cfg_")
+    os.close(cfg_fd)
+    with open(cfg_path, "w") as f:
+        json.dump(test_cfg, f)
+    result = subprocess.run(
+        ["python", str(BUILDER_PATH), "--config", cfg_path],
+        capture_output=True, text=True, cwd=str(BACKEND_DIR), timeout=90,
+    )
+    try: os.remove(cfg_path)
+    except: pass
+    file_size = os.path.getsize(out_path) if os.path.exists(out_path) else 0
+    try: os.remove(out_path)
+    except: pass
+    return {
+        "returncode": result.returncode,
+        "builder_path": str(BUILDER_PATH),
+        "builder_exists": BUILDER_PATH.exists(),
+        "backend_dir": str(BACKEND_DIR),
+        "backend_dir_contents": os.listdir(str(BACKEND_DIR)),
+        "stdout": result.stdout[-3000:],
+        "stderr": result.stderr[-3000:],
+        "output_file_size_bytes": file_size,
+    }
 
 
 if __name__ == "__main__":
