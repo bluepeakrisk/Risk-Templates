@@ -15,7 +15,7 @@ from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 # ── Paths ─────────────────────────────────────────────────────────────
@@ -196,13 +196,17 @@ def generate_register(config: RegisterConfig):
     os.close(out_fd)
 
     # Build config JSON for the builder subprocess
+    # Use model_dump() for pydantic v2, fall back to dict() for pydantic v1
+    def _dump(obj):
+        return obj.model_dump() if hasattr(obj, 'model_dump') else obj.dict()
+
     builder_config = {
         "industry_code": industry_code,
         "output_path": out_path,
-        "organisation": config.organisation.model_dump(),
-        "financial": config.financial.model_dump(),
+        "organisation": _dump(config.organisation),
+        "financial": _dump(config.financial),
         "focus_areas": config.focus_areas,
-        "rag_thresholds": [t.model_dump() for t in config.rag_thresholds],
+        "rag_thresholds": [_dump(t) for t in config.rag_thresholds],
         "scoring_method": config.scoring_method,
     }
 
@@ -243,18 +247,23 @@ def generate_register(config: RegisterConfig):
     if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
         raise HTTPException(status_code=500, detail="Builder produced no output file.")
 
+    # Read file into memory then delete temp file - avoids FileResponse path issues
+    with open(out_path, "rb") as f:
+        file_bytes = f.read()
+    try:
+        os.remove(out_path)
+    except OSError:
+        pass
+
     # Build response filename
     org_slug = config.organisation.name.replace(" ", "_").replace("/", "_") or "Register"
     today = datetime.date.today().isoformat()
     download_name = f"BluePeakRisk_{org_slug}_{today}.xlsx"
 
-    return FileResponse(
-        out_path,
+    return StreamingResponse(
+        iter([file_bytes]),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        filename=download_name,
-        # FileResponse will stream and Starlette handles cleanup of the path
-        # via its background cleanup if we use BackgroundTask; for simplicity
-        # we rely on the OS to clean /tmp eventually.
+        headers={"Content-Disposition": f'attachment; filename="{download_name}"'},
     )
 
 
