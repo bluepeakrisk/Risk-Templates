@@ -1,9 +1,6 @@
 """
-SME Risk Register — Backend API
-Generates customised Excel risk registers via the Blue Peak Risk library.
-
-This is a thin FastAPI wrapper around build_summary_v3.py. The builder lives
-in this same directory and is invoked via subprocess with a JSON config file.
+Blue Peak Risk — Backend API
+Generates tailored Excel risk registers via build_summary_v3.py.
 """
 import os
 import json
@@ -15,46 +12,14 @@ from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-# ── Paths ─────────────────────────────────────────────────────────────
+# ── Paths — use abspath so they resolve correctly however uvicorn is invoked ──
 BACKEND_DIR  = Path(os.path.abspath(__file__)).parent
 BUILDER_PATH = BACKEND_DIR / "build_summary_v3.py"
-print(f"[STARTUP] BACKEND_DIR: {BACKEND_DIR}")
-print(f"[STARTUP] BUILDER_PATH: {BUILDER_PATH}")
-print(f"[STARTUP] Builder exists: {BUILDER_PATH.exists()}")
 
-# ── Warm up: pre-run builder once at startup to import all library modules ──
-# This eliminates cold-start delays on the first real user request.
-import threading
-def _warmup():
-    try:
-        import tempfile as _t
-        _fd, _out = _t.mkstemp(suffix=".xlsx", prefix="bpr_warmup_")
-        os.close(_fd)
-        # Use explicit path relative to this file's directory
-        _builder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_summary_v3.py")
-        print(f"[WARMUP] Builder path: {_builder}")
-        print(f"[WARMUP] Builder exists: {os.path.exists(_builder)}")
-        subprocess.run(
-            ["python", _builder, "--industry", "PROF", "--npat", "1000000", "--out", _out],
-            capture_output=True, text=True,
-            cwd=os.path.dirname(os.path.abspath(__file__)),
-            timeout=120,
-        )
-        try: os.remove(_out)
-        except: pass
-        print("[WARMUP] Complete")
-    except Exception as e:
-        print(f"[WARMUP] Failed: {e}")
-
-threading.Thread(target=_warmup, daemon=True).start()
-
-# ── Industry name → 4-letter code mapping ─────────────────────────────
-# Maps the strings sent by the frontend dropdown to the codes the builder uses.
-# The frontend sends the full label including bracketed descriptions.
-# Fallback: if no exact match, try prefix matching on the first word.
+# ── Industry label → 4-letter code ────────────────────────────────────────────
 INDUSTRY_MAP = {
     # Professional Services
     "Professional Services (Legal, Consulting, Accounting)": "PROF",
@@ -65,18 +30,15 @@ INDUSTRY_MAP = {
     "Media / Publishing / Advertising":                       "PROF",
     "Real Estate / Property Management":                      "PROF",
     "Hospitality / Tourism / Travel":                         "PROF",
-
     # Financial Services
     "Financial Services (Banking, Insurance, Investment)":    "FINS",
     "Financial Services":                                     "FINS",
-
     # Technology
     "Technology / SaaS / Software":                           "TECH",
     "Technology and SaaS":                                    "TECH",
     "Technology & SaaS":                                      "TECH",
     "Technology":                                             "TECH",
     "Telecommunications":                                     "TECH",
-
     # Healthcare
     "Healthcare (Hospitals / Clinics)":                       "HCAR",
     "Healthcare and Life Sciences":                           "HCAR",
@@ -85,7 +47,6 @@ INDUSTRY_MAP = {
     "Aged Care / Disability Services":                        "HCAR",
     "Childcare / Early Learning":                             "HCAR",
     "Pharmaceuticals / Biotechnology":                        "HCAR",
-
     # Retail
     "Retail / E-commerce":                                    "RETL",
     "Retail and Consumer":                                    "RETL",
@@ -96,8 +57,7 @@ INDUSTRY_MAP = {
     "Import / Export":                                        "RETL",
     "Consumer Goods / FMCG":                                  "RETL",
     "Food & Beverage":                                        "RETL",
-
-    # Industrial / Manufacturing
+    # Industrial
     "Manufacturing (Light)":                                  "INDU",
     "Manufacturing (Heavy / Industrial)":                     "INDU",
     "Manufacturing and Industrial":                           "INDU",
@@ -113,8 +73,7 @@ INDUSTRY_MAP = {
     "Chemicals / Petrochemicals":                             "INDU",
     "Automotive":                                             "INDU",
     "Aerospace / Defence":                                    "INDU",
-
-    # Public Sector / Not-for-profit
+    # Public / NFP
     "Government (Federal / State)":                           "PUBL",
     "Government (Local Council)":                             "PUBL",
     "Not-for-profit / Charity":                               "PUBL",
@@ -128,15 +87,11 @@ INDUSTRY_MAP = {
     "Higher Education / Universities":                        "PUBL",
     "Sports / Recreation":                                    "PUBL",
     "Arts / Culture":                                         "PUBL",
-    "Other":                                                  "PROF",  # default fallback
+    "Other":                                                  "PROF",
 }
 
-# ── FastAPI app ───────────────────────────────────────────────────────
-app = FastAPI(
-    title="Blue Peak Risk Register API",
-    description="Generate tailored risk registers for SMEs",
-    version="2.0.0",
-)
+# ── App ────────────────────────────────────────────────────────────────────────
+app = FastAPI(title="Blue Peak Risk API", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -146,7 +101,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Request models ────────────────────────────────────────────────────
+# ── Request models ─────────────────────────────────────────────────────────────
 class OrganisationConfig(BaseModel):
     name: str = "SME"
     industry: str = "Professional Services"
@@ -155,41 +110,48 @@ class OrganisationConfig(BaseModel):
     cycle: str = "Quarterly"
     notes: Optional[str] = ""
 
-
 class FinancialConfig(BaseModel):
     npat: float = 2_000_000
     currency: str = "AUD"
-    # 5 cumulative thresholds as fractions of NPAT for impact bands 1-5
     fin_pcts: List[float] = [0.01, 0.05, 0.15, 0.30, 1.00]
-
 
 class RAGThreshold(BaseModel):
     label: str
     min: int
     max: int
 
-
 class RegisterConfig(BaseModel):
     organisation: OrganisationConfig = Field(default_factory=OrganisationConfig)
     financial: FinancialConfig = Field(default_factory=FinancialConfig)
     focus_areas: List[str] = []
-    # 4-tier RAG (Low/Moderate/High/Very High). Score ranges configurable;
-    # labels are conventionally fixed for the colour mapping to work.
     rag_thresholds: List[RAGThreshold] = [
         RAGThreshold(label="Low",       min=1,  max=3),
         RAGThreshold(label="Moderate",  min=4,  max=9),
         RAGThreshold(label="High",      min=10, max=15),
         RAGThreshold(label="Very High", min=16, max=25),
     ]
-    # "max" (default), "avg", or "weighted" (treated as max for now)
     scoring_method: str = "max"
 
+# ── Helpers ────────────────────────────────────────────────────────────────────
+def _dump(obj):
+    """Pydantic v1/v2 compatibility."""
+    return obj.model_dump() if hasattr(obj, "model_dump") else obj.dict()
 
-# ── Health endpoints ──────────────────────────────────────────────────
+def _map_industry(label: str) -> str:
+    """Map frontend industry label to 4-letter code. Falls back to prefix match."""
+    code = INDUSTRY_MAP.get(label)
+    if code:
+        return code
+    label_lower = label.lower()
+    for key, val in INDUSTRY_MAP.items():
+        if label_lower.startswith(key.lower().split("(")[0].strip()):
+            return val
+    return "PROF"  # final fallback
+
+# ── Endpoints ──────────────────────────────────────────────────────────────────
 @app.get("/")
 def root():
-    return {"status": "ok", "service": "Blue Peak Risk Register API", "version": "2.0.0"}
-
+    return {"status": "ok", "service": "Blue Peak Risk API", "version": "2.0.0"}
 
 @app.get("/health")
 def health():
@@ -199,35 +161,15 @@ def health():
         "builder_present": BUILDER_PATH.exists(),
     }
 
-
-# ── Main endpoint ─────────────────────────────────────────────────────
 @app.post("/generate")
 def generate_register(config: RegisterConfig):
-    """Generate a customised Excel risk register and return as a download."""
-    # Map industry label to code — exact match first, then partial
-    industry_label = config.organisation.industry
-    industry_code = INDUSTRY_MAP.get(industry_label)
-    if industry_code is None:
-        # Partial match: check if any key starts with the sent label or vice versa
-        for key, code in INDUSTRY_MAP.items():
-            if industry_label.lower().startswith(key.lower().split("(")[0].strip().lower()):
-                industry_code = code
-                break
-    if industry_code is None:
-        raise HTTPException(
-            status_code=400,
-            detail=(f"Unknown industry '{industry_label}'. "
-                    f"Please select from the dropdown options."),
-        )
+    """Generate a tailored Excel risk register and return as a download."""
 
-    # Build output path (will hold the generated workbook)
-    out_fd, out_path = tempfile.mkstemp(suffix=".xlsx", prefix="bpr_register_")
+    industry_code = _map_industry(config.organisation.industry)
+
+    # Write output and config to temp files
+    out_fd, out_path = tempfile.mkstemp(suffix=".xlsx", prefix="bpr_")
     os.close(out_fd)
-
-    # Build config JSON for the builder subprocess
-    # Use model_dump() for pydantic v2, fall back to dict() for pydantic v1
-    def _dump(obj):
-        return obj.model_dump() if hasattr(obj, 'model_dump') else obj.dict()
 
     builder_config = {
         "industry_code": industry_code,
@@ -239,104 +181,50 @@ def generate_register(config: RegisterConfig):
         "scoring_method": config.scoring_method,
     }
 
-    # Write config to a temporary JSON file
     cfg_fd, cfg_path = tempfile.mkstemp(suffix=".json", prefix="bpr_cfg_")
     os.close(cfg_fd)
-    with open(cfg_path, "w") as f:
-        json.dump(builder_config, f)
-
-    # Invoke the builder
     try:
+        with open(cfg_path, "w") as f:
+            json.dump(builder_config, f)
+
         result = subprocess.run(
             ["python", str(BUILDER_PATH), "--config", cfg_path],
             capture_output=True,
             text=True,
             cwd=str(BACKEND_DIR),
-            timeout=120,  # 2 minutes — allows for Railway cold starts
+            timeout=120,
         )
     except subprocess.TimeoutExpired:
-        raise HTTPException(status_code=504, detail="Workbook generation timed out (>120s).")
+        raise HTTPException(status_code=504, detail="Generation timed out. Please try again.")
     finally:
-        # Clean up the config file regardless
-        try:
-            os.remove(cfg_path)
-        except OSError:
-            pass
+        try: os.remove(cfg_path)
+        except OSError: pass
 
     if result.returncode != 0:
-        # Print full stderr to Railway logs (visible in deploy log stream)
-        print(f"[ERROR] Builder failed for industry={industry_code}")
-        print(f"[ERROR] STDOUT: {result.stdout[-1000:]}")
-        print(f"[ERROR] STDERR: {result.stderr[-2000:]}")
+        print(f"[ERROR] industry={industry_code} stdout={result.stdout[-500:]} stderr={result.stderr[-500:]}")
         raise HTTPException(
             status_code=500,
-            detail=f"Builder failed: {result.stderr[-1000:] if result.stderr else result.stdout[-1000:] or 'no output'}",
+            detail=f"Generation failed: {(result.stderr or result.stdout)[-800:]}",
         )
 
     if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
-        raise HTTPException(status_code=500, detail="Builder produced no output file.")
+        raise HTTPException(status_code=500, detail="Builder produced no output.")
 
-    # Read file into memory then delete temp file - avoids FileResponse path issues
+    # Read into memory and stream back
     with open(out_path, "rb") as f:
         file_bytes = f.read()
-    try:
-        os.remove(out_path)
-    except OSError:
-        pass
+    try: os.remove(out_path)
+    except OSError: pass
 
-    # Build response filename
     org_slug = config.organisation.name.replace(" ", "_").replace("/", "_") or "Register"
-    today = datetime.date.today().isoformat()
-    download_name = f"BluePeakRisk_{org_slug}_{today}.xlsx"
+    filename = f"BluePeakRisk_{org_slug}_{datetime.date.today().isoformat()}.xlsx"
 
     return StreamingResponse(
         iter([file_bytes]),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f'attachment; filename="{download_name}"'},
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
-
-
-@app.get("/debug")
-def debug_builder():
-    """Run builder with minimal test config and return full stdout/stderr.
-    Remove this endpoint once the deployment is stable."""
-    import tempfile, json, subprocess
-    out_fd, out_path = tempfile.mkstemp(suffix=".xlsx", prefix="bpr_debug_")
-    os.close(out_fd)
-    test_cfg = {
-        "industry_code": "FINS",
-        "output_path": out_path,
-        "organisation": {"name": "Debug", "industry": "Financial Services", "size": "", "country": "", "cycle": "", "notes": ""},
-        "financial": {"npat": 1000000, "currency": "AUD", "fin_pcts": [0.01, 0.05, 0.15, 0.30, 1.00]},
-        "focus_areas": [],
-        "rag_thresholds": [{"label":"Low","min":1,"max":3},{"label":"Moderate","min":4,"max":9},{"label":"High","min":10,"max":15},{"label":"Very High","min":16,"max":25}],
-        "scoring_method": "max",
-    }
-    cfg_fd, cfg_path = tempfile.mkstemp(suffix=".json", prefix="bpr_dbg_cfg_")
-    os.close(cfg_fd)
-    with open(cfg_path, "w") as f:
-        json.dump(test_cfg, f)
-    result = subprocess.run(
-        ["python", str(BUILDER_PATH), "--config", cfg_path],
-        capture_output=True, text=True, cwd=str(BACKEND_DIR), timeout=90,
-    )
-    try: os.remove(cfg_path)
-    except: pass
-    file_size = os.path.getsize(out_path) if os.path.exists(out_path) else 0
-    try: os.remove(out_path)
-    except: pass
-    return {
-        "returncode": result.returncode,
-        "builder_path": str(BUILDER_PATH),
-        "builder_exists": BUILDER_PATH.exists(),
-        "backend_dir": str(BACKEND_DIR),
-        "backend_dir_contents": os.listdir(str(BACKEND_DIR)),
-        "stdout": result.stdout[-3000:],
-        "stderr": result.stderr[-3000:],
-        "output_file_size_bytes": file_size,
-    }
-
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
